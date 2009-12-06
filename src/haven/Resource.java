@@ -456,6 +456,57 @@ public class Resource implements Comparable<Resource>, Prioritized, Serializable
 	public abstract void init();
     }
 	
+    /*
+     * Just a simple and naive box packing algorithm. At least, it
+     * shouldn't be scaling worse than O(n*log(n)).
+     */
+    private static void packlayers(Image[] layers) {
+	int mh = 0;
+	for(Image img : layers) {
+	    if(img.sz.y > mh)
+		mh = img.sz.y;
+	}
+	mh = Tex.nextp2((int)(mh * Math.sqrt(layers.length)));
+	Arrays.sort(layers, new Comparator<Image>() {
+		public int compare(Image a, Image b) {
+		    return(b.sz.x - a.sz.x);
+		}
+	    });
+	int[] cy = new int[layers.length];
+	int[] cx = new int[layers.length];
+	int[] ly = new int[layers.length];
+	int[] lx = new int[layers.length];
+	int nx = 0;
+	int my = 0;
+	for(int i = 0; i < layers.length; i++) {
+	    if(cy[i] + layers[i].sz.y <= mh) {
+		if(cy[i] == 0) {
+		    cx[i] = nx;
+		    nx += layers[i].sz.x;
+		}
+		lx[i] = cx[i];
+		ly[i] = cy[i];
+		cy[i] += layers[i].sz.y;
+		if(cy[i] > my)
+		    my = cy[i];
+		continue;
+	    }
+	}
+	BufferedImage buf = TexI.mkbuf(new Coord(nx, my));
+	Graphics g = buf.getGraphics();
+	for(int i = 0; i < layers.length; i++)
+	    g.drawImage(layers[i].img, lx[i], ly[i], null);
+	Tex packed = new TexI(buf);
+	for(int i = 0; i < layers.length; i++)
+	    layers[i].tex = new TexSI(packed, new Coord(lx[i], ly[i]), layers[i].sz);
+	/*
+	int sum = 0;
+	for(Image img : layers)
+	    sum += Tex.nextp2(img.sz.x) * Tex.nextp2(img.sz.y);
+	System.out.println((((TexGL)packed).tdim.x * ((TexGL)packed).tdim.y) + " / " + sum);
+	*/
+    }
+
     public class Image extends Layer implements Comparable<Image> {
 	public transient BufferedImage img;
 	transient private Tex tex;
@@ -484,11 +535,10 @@ public class Resource implements Comparable<Resource>, Prioritized, Serializable
 	}
 		
 	public synchronized Tex tex() {
-		if(tex != null)
-		    return(tex);
-		tex = new TexI(img);
-		return(tex);
-	    }
+	    if(tex == null)
+		packlayers(layers(Image.class).toArray(new Image[0]));
+	    return(tex);
+	}
 		
 	private boolean detectgay() {
 	    for(int y = 0; y < sz.y; y++) {
