@@ -44,6 +44,16 @@ public class MiniMap extends Widget {
     public static final Resource plx = Resource.load("gfx/hud/mmap/x");
     MapView mv;
     
+    static {
+	Widget.addtype("mm", new WidgetFactory() {
+		public Widget create(Coord c, Widget parent, Object[] args) {
+		    Coord sz = (Coord)args[0];
+		    MapView mv = (MapView)parent.ui.widgets.get((Integer)args[1]);
+		    return(new MiniMap(c, sz, parent, mv));
+		}
+	    });
+    }
+    
     static class Loader implements Runnable {
 	Thread me = null;
 	

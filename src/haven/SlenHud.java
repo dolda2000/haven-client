@@ -178,7 +178,6 @@ public class SlenHud extends Widget implements DTarget, DropTarget {
 		    sdn();
 		}
 	    };
-	new MiniMap(new Coord(5, 5), new Coord(125, 125), this, ui.mainview);
 	sub.visible = sdb.visible = false;
     }
 	
@@ -370,20 +369,10 @@ public class SlenHud extends Widget implements DTarget, DropTarget {
 	super.wdgmsg(sender, msg, args);
     }
 	
-    public void uimsg(String msg, Object... args) {
-	if(msg == "err") {
-	    error((String)args[0]);
-	} else if(msg == "setbelt") {
-	    if(args.length < 2) {
-		belt[(Integer)args[0]] = null;
-	    } else {
-		belt[(Integer)args[0]] = ui.sess.getres((Integer)args[1]);
-	    }
-	} else {
-	    super.uimsg(msg, args);
-	}
+    public void setbelt(int slot, Indir<Resource> res) {
+	belt[slot] = res;
     }
-	
+
     private void updbtns() {
 	if(wnds.size() <= 5) {
 	    woff = 0;
