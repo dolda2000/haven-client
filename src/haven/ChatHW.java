@@ -57,7 +57,13 @@ public class ChatHW extends HWindow {
 	    Color col = null;
 	    if(args.length > 1)
 		col = (Color)args[1];
+	    if(args.length > 2)
+		makeurgent((Integer)args[2]);
 	    out.append((String)args[0], col);
+	} else if(msg == "focusme") {
+	    shp.setawnd(this);
+	    shp.vc.show();
+	    setfocus(in);
 	} else {
 	    super.uimsg(msg, args);
 	}
