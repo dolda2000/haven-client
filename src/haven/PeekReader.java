@@ -24,42 +24,62 @@
  *  Boston, MA 02111-1307 USA
  */
 
-package haven.test;
+package haven;
 
-import haven.*;
+import java.io.*;
 
-public abstract class BaseTest implements Runnable {
-    public ThreadGroup tg;
-    public Thread me;
-    
-    public BaseTest() {
-	tg = new ThreadGroup("Test process");
-	Resource.loadergroup = tg;
-	Audio.enabled = false;
-	Runtime.getRuntime().addShutdownHook(new Thread() {
-		public void run() {
-		    printf("Terminating test upon JVM shutdown...");
-		    BaseTest.this.stop();
-		    try {
-			me.join();
-			printf("Shut down cleanly");
-		    } catch(InterruptedException e) {
-			printf("Termination handler interrupted");
-		    }
-		}
-	    });
+public class PeekReader extends Reader {
+    private final Reader back;
+    private boolean p = false;
+    private int la;
+	
+    public PeekReader(Reader back) {
+	this.back = back;
+    }
+	
+    public void close() throws IOException {
+	back.close();
+    }
+	
+    public int read() throws IOException {
+	if(p) {
+	    p = false;
+	    return(la);
+	} else {
+	    return(back.read());
+	}
+    }
+	
+    public int read(char[] b, int off, int len) throws IOException {
+	int r = 0;
+	while(r < len) {
+	    int c = read();
+	    if(c < 0)
+		return(r);
+	    b[off + r++] = (char)c;
+	}
+	return(r);
+    }
+	
+    public boolean ready() throws IOException {
+	if(p)
+	    return(true);
+	return(back.ready());
     }
     
-    public static void printf(String fmt, Object... args) {
-	System.out.println(String.format(fmt, args));
+    protected boolean whitespace(char c) {
+	return(Character.isWhitespace(c));
+    }
+
+    public int peek(boolean skipws) throws IOException {
+	while(!p || (skipws && (la >= 0) && whitespace((char)la))) {
+	    la = back.read();
+	    p = true;
+	}
+	return(la);
     }
     
-    public void start() {
-	me = new Thread(tg, this, "Test controller");
-	me.start();
-    }
-    
-    public void stop() {
-	me.interrupt();
+    public int peek() throws IOException {
+	return(peek(false));
     }
 }

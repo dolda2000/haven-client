@@ -24,42 +24,45 @@
  *  Boston, MA 02111-1307 USA
  */
 
-package haven.test;
+package haven;
 
-import haven.*;
+import java.awt.Color;
 
-public abstract class BaseTest implements Runnable {
-    public ThreadGroup tg;
-    public Thread me;
+public class RichTextBox extends Widget {
+    public Color bg = Color.BLACK;
+    private final RichText.Foundry fnd;
+    private RichText text;
+    private Scrollbar sb;
     
-    public BaseTest() {
-	tg = new ThreadGroup("Test process");
-	Resource.loadergroup = tg;
-	Audio.enabled = false;
-	Runtime.getRuntime().addShutdownHook(new Thread() {
-		public void run() {
-		    printf("Terminating test upon JVM shutdown...");
-		    BaseTest.this.stop();
-		    try {
-			me.join();
-			printf("Shut down cleanly");
-		    } catch(InterruptedException e) {
-			printf("Termination handler interrupted");
-		    }
-		}
-	    });
+    public RichTextBox(Coord c, Coord sz, Widget parent, String text, RichText.Foundry fnd) {
+	super(c, sz, parent);
+	this.fnd = fnd;
+	this.text = fnd.render(text, sz.x - 20);
+	this.sb = new Scrollbar(new Coord(sz.x, 0), sz.y, this, 0, this.text.sz().y + 20 - sz.y);
     }
     
-    public static void printf(String fmt, Object... args) {
-	System.out.println(String.format(fmt, args));
+    public RichTextBox(Coord c, Coord sz, Widget parent, String text, Object... attrs) {
+	this(c, sz, parent, text, new RichText.Foundry(attrs));
     }
     
-    public void start() {
-	me = new Thread(tg, this, "Test controller");
-	me.start();
+    public void draw(GOut g) {
+	if(bg != null) {
+	    g.chcolor(bg);
+	    g.frect(Coord.z, sz);
+	    g.chcolor();
+	}
+	g.image(text.tex(), new Coord(10, 10 - sb.val));
+	super.draw(g);
     }
     
-    public void stop() {
-	me.interrupt();
+    public void settext(String text) {
+	this.text = fnd.render(text, sz.x - 20);
+	sb.max = this.text.sz().y + 20 - sz.y;
+	sb.val = 0;
+    }
+    
+    public boolean mousewheel(Coord c, int amount) {
+	sb.ch(amount * 20);
+	return(true);
     }
 }

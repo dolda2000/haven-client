@@ -356,10 +356,7 @@ public class Resource implements Comparable<Resource>, Prioritized, Serializable
 	    }
 	    synchronized(Loader.this) {
 		if(th == null) {
-		    ThreadGroup tg = loadergroup;
-		    if(tg == null)
-			tg = Utils.tg();
-		    th = new Thread(tg, Loader.this, "Haven resource loader");
+		    th = new HackThread(loadergroup, Loader.this, "Haven resource loader");
 		    th.setDaemon(true);
 		    th.start();
 		}
@@ -688,8 +685,13 @@ public class Resource implements Comparable<Resource>, Prioritized, Serializable
 	@SuppressWarnings("unchecked")
 	public void init() {
 	    flavobjs = new WeightList<Resource>();
-	    for(int i = 0; i < flw.length; i++)
-		flavobjs.add(load(fln[i], flv[i]), flw[i]);
+	    for(int i = 0; i < flw.length; i++) {
+		try {
+		    flavobjs.add(load(fln[i], flv[i]), flw[i]);
+		} catch(RuntimeException e) {
+		    throw(new LoadException("Illegal resource dependency", e, Resource.this));
+		}
+	    }
 	    Collection<Tile> tiles = new LinkedList<Tile>();
 	    ground = new WeightList<Tile>();
 	    boolean hastrans = (fl & 1) != 0;
@@ -750,10 +752,15 @@ public class Resource implements Comparable<Resource>, Prioritized, Serializable
 	    String pr = Utils.strd(buf, off);
 	    int pver = Utils.uint16d(buf, off[0]);
 	    off[0] += 2;
-	    if(pr.length() == 0)
+	    if(pr.length() == 0) {
 		parent = null;
-	    else
-		parent = load(pr, pver);
+	    } else {
+		try {
+		    parent = load(pr, pver);
+		} catch(RuntimeException e) {
+		    throw(new LoadException("Illegal resource dependency", e, Resource.this));
+		}
+	    }
 	    name = Utils.strd(buf, off);
 	    Utils.strd(buf, off); /* Prerequisite skill */
 	    hk = (char)Utils.uint16d(buf, off[0]);
@@ -1093,6 +1100,17 @@ public class Resource implements Comparable<Resource>, Prioritized, Serializable
 	in.close();
     }
 
+    public static void dumplist(Collection<Resource> list, Writer dest) {
+	PrintWriter out = new PrintWriter(dest);
+	List<Resource> sorted = new ArrayList<Resource>(list);
+	Collections.sort(sorted);
+	for(Resource res : sorted) {
+	    if(res.loading)
+		continue;
+	    out.println(res.name + ":" + res.ver);
+	}
+    }
+
     public static void updateloadlist(File file) throws Exception {
 	BufferedReader r = new BufferedReader(new FileReader(file));
 	Map<String, Integer> orig = new HashMap<String, Integer>();
@@ -1118,7 +1136,7 @@ public class Resource implements Comparable<Resource>, Prioritized, Serializable
 	    Thread.sleep(500);
 	}
 	System.out.println();
-	PrintWriter w = new PrintWriter(file);
+	Collection<Resource> cur = new LinkedList<Resource>();
 	for(Map.Entry<String, Integer> e : orig.entrySet()) {
 	    String nm = e.getKey();
 	    int ver = e.getValue();
@@ -1127,9 +1145,14 @@ public class Resource implements Comparable<Resource>, Prioritized, Serializable
 	    res.checkerr();
 	    if(res.ver != ver)
 		System.out.println(nm + ": " + ver + " -> " + res.ver);
-	    w.println(nm + ":" + res.ver);
+	    cur.add(res);
 	}
-	w.close();
+	Writer w = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
+	try {
+	    dumplist(cur, w);
+	} finally {
+	    w.close();
+	}
     }
 
     public static void main(String[] args) throws Exception {

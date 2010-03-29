@@ -112,12 +112,12 @@ public class Audio {
 	}
     }
 	
-    private static class Player extends Thread {
+    private static class Player extends HackThread {
 	private Collection<CS> clips = new LinkedList<CS>();
 	private int srate, nch = 2;
 	
 	Player() {
-	    super(Utils.tg(), "Haven audio player");
+	    super("Haven audio player");
 	    setDaemon(true);
 	    srate = (int)fmt.getSampleRate();
 	}
@@ -165,7 +165,6 @@ public class Audio {
 		    e.printStackTrace();
 		    return;
 		}
-		int bufsize = line.getBufferSize();
 		byte[] buf = new byte[1024];
 		while(true) {
 		    if(Thread.interrupted())
@@ -181,14 +180,6 @@ public class Audio {
 			    clips.add(cs);
 			ncl.clear();
 		    }
-		    /*
-		    while(true) {
-			int bufdata = bufsize - line.available();
-			if(bufdata < 1024)
-			    break;
-			Thread.sleep(((bufdata - 1024) / 4) / 44);
-		    }
-		    */
 		    fillbuf(buf, 0, 1024);
 		    for(int off = 0; off < buf.length; off += line.write(buf, off, buf.length - off));
 		}
@@ -307,5 +298,18 @@ public class Audio {
 	    play(c);
 	for(DataClip c : clips)
 	    c.finwait();
+    }
+    
+    static {
+	Console.setscmd("sfx", new Console.Command() {
+		public void run(Console cons, String[] args) {
+		    play(Resource.load(args[1]));
+		}
+	    });
+	Console.setscmd("sfxvol", new Console.Command() {
+		public void run(Console cons, String[] args) {
+		    setvolume(Double.parseDouble(args[1]));
+		}
+	    });
     }
 }

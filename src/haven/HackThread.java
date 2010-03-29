@@ -24,42 +24,52 @@
  *  Boston, MA 02111-1307 USA
  */
 
-package haven.test;
+package haven;
 
-import haven.*;
+import java.util.*;
 
-public abstract class BaseTest implements Runnable {
-    public ThreadGroup tg;
-    public Thread me;
-    
-    public BaseTest() {
-	tg = new ThreadGroup("Test process");
-	Resource.loadergroup = tg;
-	Audio.enabled = false;
-	Runtime.getRuntime().addShutdownHook(new Thread() {
-		public void run() {
-		    printf("Terminating test upon JVM shutdown...");
-		    BaseTest.this.stop();
-		    try {
-			me.join();
-			printf("Shut down cleanly");
-		    } catch(InterruptedException e) {
-			printf("Termination handler interrupted");
-		    }
-		}
-	    });
+public class HackThread extends Thread {
+    public HackThread(ThreadGroup tg, Runnable target, String name) {
+	/* Hack #1: Override stupid security-managers' whims to move
+	 * threads into whimsical thread-groups. */
+	super((tg == null)?tg():tg, target, name);
+    }
+
+    public HackThread(Runnable target, String name) {
+	this(null, target, name);
+    }
+
+    public HackThread(String name) {
+	this(null, name);
     }
     
-    public static void printf(String fmt, Object... args) {
-	System.out.println(String.format(fmt, args));
+    public static ThreadGroup tg() {
+	return(Thread.currentThread().getThreadGroup());
     }
     
-    public void start() {
-	me = new Thread(tg, this, "Test controller");
-	me.start();
+    /* Hack #2: Allow hooking into thread interruptions to as to
+     * interrupt normally uninterruptible stuff like Sockets. For a
+     * more thorough explanation why this is necessary, see
+     * HackSocket. */
+    private Set<Runnable> ils = new HashSet<Runnable>();
+    
+    public void addil(Runnable r) {
+	synchronized(ils) {
+	    ils.add(r);
+	}
     }
     
-    public void stop() {
-	me.interrupt();
+    public void remil(Runnable r) {
+	synchronized(ils) {
+	    ils.remove(r);
+	}
+    }
+    
+    public void interrupt() {
+	super.interrupt();
+	synchronized(ils) {
+	    for(Runnable r : ils)
+		r.run();
+	}
     }
 }

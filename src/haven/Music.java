@@ -26,7 +26,6 @@
 
 package haven;
 
-import java.io.*;
 import javax.sound.midi.*;
 
 public class Music {
@@ -38,7 +37,7 @@ public class Music {
 	    System.out.println(str);
     }
 
-    private static class Player extends Thread {
+    private static class Player extends HackThread {
 	private Resource res;
 	private Thread waitfor;
 	private Sequencer seq;
@@ -47,7 +46,7 @@ public class Music {
 	private boolean loop = false;
 	
 	private Player(Resource res, Thread waitfor) {
-	    super(Utils.tg(), "Music player");
+	    super("Music player");
 	    setDaemon(true);
 	    this.res = res;
 	    this.waitfor = waitfor;
@@ -148,5 +147,29 @@ public class Music {
 	debug = true;
 	play(Resource.load(args[0]), (args.length > 1)?args[1].equals("y"):false);
 	player.join();
+    }
+    
+    static {
+	Console.setscmd("bgm", new Console.Command() {
+		public void run(Console cons, String[] args) {
+		    int i = 1;
+		    String opt;
+		    boolean loop = false;
+		    if(i < args.length) {
+			while((opt = args[i]).charAt(0) == '-') {
+			    i++;
+			    if(opt.equals("-l"))
+				loop = true;
+			}
+			String resnm = args[i++];
+			int ver = -1;
+			if(i < args.length)
+			    ver = Integer.parseInt(args[i++]);
+			Music.play(Resource.load(resnm, ver), loop);
+		    } else {
+			Music.play(null, false);
+		    }		
+		}
+	    });
     }
 }

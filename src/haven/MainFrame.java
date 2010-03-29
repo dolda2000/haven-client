@@ -27,7 +27,6 @@
 package haven;
 
 import java.awt.*;
-import java.net.URL;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
@@ -135,7 +134,7 @@ public class MainFrame extends Frame implements Runnable, FSMan {
 		    g.interrupt();
 		}
 	    });
-	Thread ui = new Thread(Utils.tg(), p, "Haven UI thread");
+	Thread ui = new HackThread(p, "Haven UI thread");
 	p.setfsm(this);
 	ui.start();
 	try {
@@ -205,8 +204,7 @@ public class MainFrame extends Frame implements Runnable, FSMan {
 
     private static void main2(String[] args) {
 	Config.cmdline(args);
-	ThreadGroup g = Utils.tg();
-	Resource.loadergroup = g;
+	ThreadGroup g = HackThread.tg();
 	setupres();
 	MainFrame f = new MainFrame(800, 600);
 	if(Config.fullscreen)
@@ -230,7 +228,12 @@ public class MainFrame extends Frame implements Runnable, FSMan {
 		    if(res.prio >= 0)
 			used.add(res);
 		}
-		dumplist(used, new PrintWriter(ResCache.global.store("tmp/allused")));
+		Writer w = new OutputStreamWriter(ResCache.global.store("tmp/allused"), "UTF-8");
+		try {
+		    Resource.dumplist(used, w);
+		} finally {
+		    w.close();
+		}
 	    } catch(IOException e) {}
 	}
     }
@@ -249,7 +252,7 @@ public class MainFrame extends Frame implements Runnable, FSMan {
 	} else {
 	    g = new ThreadGroup("Haven client");
 	}
-	Thread main = new Thread(g, new Runnable() {
+	Thread main = new HackThread(g, new Runnable() {
 		public void run() {
 		    try {
 			javabughack();
@@ -271,22 +274,15 @@ public class MainFrame extends Frame implements Runnable, FSMan {
 	
     private static void dumplist(Collection<Resource> list, String fn) {
 	try {
-	    if(fn != null)
-		dumplist(list, new PrintWriter(fn));
-	} catch(Exception e) {
-	    throw(new RuntimeException(e));
-	}
-    }
-    
-    private static void dumplist(Collection<Resource> list, PrintWriter out) {
-	try {
-	    for(Resource res : list) {
-		if(res.loading)
-		    continue;
-		out.println(res.name + ":" + res.ver);
+	    if(fn != null) {
+		Writer w = new OutputStreamWriter(new FileOutputStream(fn), "UTF-8");
+		try {
+		    Resource.dumplist(list, w);
+		} finally {
+		    w.close();
+		}
 	    }
-	    out.close();
-	} catch(Exception e) {
+	} catch(IOException e) {
 	    throw(new RuntimeException(e));
 	}
     }

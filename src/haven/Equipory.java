@@ -27,9 +27,6 @@
 package haven;
 
 import java.util.*;
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-import java.io.Reader;
 
 public class Equipory extends Window implements DTarget {
     List<Inventory> epoints;
@@ -113,6 +110,8 @@ public class Equipory extends Window implements DTarget {
 	if((ep = epoints.indexOf(sender)) != -1) {
 	    if(msg == "drop") {
 		wdgmsg("drop", ep);
+		return;
+	    } else if(msg == "xfer") {
 		return;
 	    }
 	}

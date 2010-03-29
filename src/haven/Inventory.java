@@ -60,6 +60,14 @@ public class Inventory extends Widget implements DTarget {
 	return(fac.create(c.mul(sqsz).add(1, 1), this, cargs));
     }
 	
+    public boolean mousewheel(Coord c, int amount) {
+	if(amount < 0)
+	    wdgmsg("xfer", -1, ui.modflags());
+	if(amount > 0)
+	    wdgmsg("xfer", 1, ui.modflags());
+	return(true);
+    }
+    
     public boolean drop(Coord cc, Coord ul) {
 	wdgmsg("drop", ul.add(sqsz.div(2)).div(invsq.sz()));
 	return(true);

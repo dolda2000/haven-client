@@ -27,7 +27,6 @@
 package haven;
 
 import java.util.*;
-import java.lang.reflect.*;
 
 public class Gob implements Sprite.Owner {
     public Coord rc, sc;
@@ -42,6 +41,7 @@ public class Gob implements Sprite.Owner {
 	public Message sdt;
 	public Sprite spr;
 	public int id;
+	public boolean delign = false;
 	
 	public Overlay(int id, Indir<Resource> res, Message sdt) {
 	    this.id = id;
@@ -82,11 +82,11 @@ public class Gob implements Sprite.Owner {
 	for(Iterator<Overlay> i = ols.iterator(); i.hasNext();) {
 	    Overlay ol = i.next();
 	    if(ol.spr == null) {
-		if((getneg() != null) && (ol.res.get() != null))
+		if(((getattr(Drawable.class) == null) || (getneg() != null)) && (ol.res.get() != null))
 		    ol.spr = Sprite.create(this, ol.res.get(), ol.sdt);
 	    } else {
 		boolean done = ol.spr.tick(dt);
-		if(done)
+		if((!ol.delign || (ol.spr instanceof Overlay.CDel)) && done)
 		    i.remove();
 	    }
 	}
@@ -159,13 +159,12 @@ public class Gob implements Sprite.Owner {
     public void drawsetup(Sprite.Drawer drawer, Coord dc, Coord sz) {
 	Drawable d = getattr(Drawable.class);
 	Coord dro = drawoff();
-	if(d != null) {
-	    for(Overlay ol : ols) {
-		if(ol.spr != null)
-		    ol.spr.setup(drawer, dc, dro);
-	    }
-	    d.setup(drawer, dc, dro);
+	for(Overlay ol : ols) {
+	    if(ol.spr != null)
+		ol.spr.setup(drawer, dc, dro);
 	}
+	if(d != null)
+	    d.setup(drawer, dc, dro);
     }
     
     public Random mkrandoom() {

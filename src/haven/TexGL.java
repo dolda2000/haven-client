@@ -27,9 +27,9 @@
 package haven;
 
 import java.awt.Color;
-import java.nio.*;
 import java.util.*;
 import javax.media.opengl.*;
+import static haven.GOut.checkerr;
 
 public abstract class TexGL extends Tex {
     protected int id = -1;
@@ -42,12 +42,6 @@ public abstract class TexGL extends Tex {
     public TexGL(Coord sz) {
 	super(sz);
 	tdim = new Coord(nextp2(sz.x), nextp2(sz.y));
-    }
-	
-    private void checkerr(GL gl) {
-	int err = gl.glGetError();
-	if(err != 0)
-	    throw(new RuntimeException("GL Error: " + err));
     }
 	
     protected abstract void fill(GOut gl);
@@ -155,5 +149,13 @@ public abstract class TexGL extends Tex {
 	    dc.clear();
 	    gl.glDeleteTextures(da.length, da, 0);
 	}
+    }
+    
+    static {
+	Console.setscmd("texdis", new Console.Command() {
+		public void run(Console cons, String[] args) {
+		    disableall = (Integer.parseInt(args[1]) != 0);
+		}
+	    });
     }
 }
