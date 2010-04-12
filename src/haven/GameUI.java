@@ -34,6 +34,8 @@ public class GameUI extends Widget {
     public final String chrnm;
     SlenHud slen;
     MapView map;
+    Fightview frl;
+    Cal cal;
     Map<Integer, Widget> meters = new TreeMap<Integer, Widget>();
     
     static {
@@ -53,8 +55,25 @@ public class GameUI extends Widget {
 	slen = new SlenHud(Coord.z, this);
 	new Bufflist(new Coord(95, 50), this);
 	new Avaview(new Coord(10, 10), this, plid);
+	cal = new Cal(new Coord(333, 10), this);
     }
     
+    private void setfight(Fightview frl) {
+	if((this.frl == null) && (frl != null)) {
+	    ui.destroy(this.cal);
+	    this.cal = null;
+	} else if((this.frl != null) && (frl == null)) {
+	    this.cal = new Cal(new Coord(333, 10), this);
+	}
+	this.frl = frl;
+    }
+
+    public void dstchild(Widget wdg) {
+	if(wdg == frl) {
+	    setfight(null);
+	}
+    }
+
     public Widget makechild(WidgetFactory f, Object[] pargs, Object[] cargs) {
 	String place = ((String)pargs[0]).intern();
 	if(place == "map") {
@@ -71,16 +90,10 @@ public class GameUI extends Widget {
 	} else if(place == "minimap") {
 	    int id = (Integer)cargs[0];
 	    return(f.create(new Coord(5, 5), slen, new Object[] {new Coord(125, 125), id}));
-	} else if(place == "cal") {
-	    return(f.create(new Coord(333, 10), this, cargs));
-	} else if(place == "fmrel") {
-	    return(f.create(new Coord(333, 10), this, cargs));
 	} else if(place == "frlist") {
-	    return(f.create(new Coord(790, 100), this, cargs));
-	} else if(place == "fmav") {
-	    return(f.create(new Coord(700, 10), this, cargs));
-	} else if(place == "fmgive") {
-	    return(f.create(new Coord(665, 10), this, cargs));
+	    Fightview frl = (Fightview)f.create(new Coord(790, 100), this, cargs);
+	    setfight(frl);
+	    return(frl);
 	} else if(place == "meter") {
 	    String meter = (String)pargs[1];
 	    int slot;

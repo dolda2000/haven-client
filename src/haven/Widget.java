@@ -163,7 +163,11 @@ public class Widget {
 	}
     }
 	
+    public void dstchild(Widget child) {
+    }
+
     public void destroy() {
+	parent.dstchild(this);
 	if(canfocus)
 	    setcanfocus(false);
     }
