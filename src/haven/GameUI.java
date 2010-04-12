@@ -31,6 +31,7 @@ import java.util.*;
 public class GameUI extends Widget {
     static final Coord meterc = new Coord(95, 10);
     public final int plid;
+    public final String chrnm;
     SlenHud slen;
     MapView map;
     Map<Integer, Widget> meters = new TreeMap<Integer, Widget>();
@@ -38,14 +39,16 @@ public class GameUI extends Widget {
     static {
 	addtype("gameui", new WidgetFactory() {
 		public Widget create(Coord c, Widget parent, Object[] args) {
-		    int plid = (Integer)args[0];
-		    return(new GameUI(parent, plid));
+		    String chrnm = (String)args[0];
+		    int plid = (Integer)args[1];
+		    return(new GameUI(parent, chrnm, plid));
 		}
 	    });
     }
     
-    public GameUI(Widget parent, int plid) {
+    public GameUI(Widget parent, String chrnm, int plid) {
 	super(Coord.z, new Coord(800, 600), parent);
+	this.chrnm = chrnm;
 	this.plid = plid;
 	slen = new SlenHud(Coord.z, this);
 	new Bufflist(new Coord(95, 50), this);
