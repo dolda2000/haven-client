@@ -299,9 +299,10 @@ public class Session {
 			    String name = msg.string();
 			    if(name.length() > 0) {
 				int group = msg.uint8();
-				oc.buddy(id, frame, name, group);
+				int btype = msg.uint8();
+				oc.buddy(id, frame, name, group, btype);
 			    } else {
-				oc.buddy(id, frame, null, 0);
+				oc.buddy(id, frame, null, 0, 0);
 			    }
 			} else if(type == OD_END) {
 			    break;
