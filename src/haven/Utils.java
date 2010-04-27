@@ -521,6 +521,17 @@ public class Utils {
 	}
     }
     
+    @SuppressWarnings("unchecked")
+    public static <T> T[] splice(T[] a, int from, int to) {
+	T[] ret = (T[])java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), to - from);
+	System.arraycopy(a, from, ret, 0, to - from);
+	return(ret);
+    }
+    
+    public static <T> T[] splice(T[] a, int from) {
+	return(splice(a, from, a.length));
+    }
+    
     static {
 	Console.setscmd("die", new Console.Command() {
 		public void run(Console cons, String[] args) {

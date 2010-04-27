@@ -41,6 +41,7 @@ public class CharWnd extends Window {
     SkillList psk, nsk;
     SkillInfo ski;
     FoodMeter foodm;
+    Charinfo chr = GameUI.getchr(this);
     Map<String, Attr> attrs = new TreeMap<String, Attr>();
     public static final Tex missing = Resource.loadtex("gfx/invobjs/missing");
     public static final Tex foodmimg = Resource.loadtex("gfx/hud/charsh/foodm");
@@ -62,11 +63,11 @@ public class CharWnd extends Window {
     
     class Attr implements Observer {
 	String nm;
-	Glob.CAttr attr;
+	Charinfo.CAttr attr;
 	
 	Attr(String nm) {
 	    this.nm = nm;
-	    attr = ui.sess.glob.cattr.get(nm);
+	    attr = chr.cattr.get(nm);
 	    attrs.put(nm, this);
 	    attr.addObserver(this);
 	}

@@ -346,8 +346,6 @@ public class Session {
 		glob.map.invalblob(msg);
 	    } else if(msg.type == Message.RMSG_GLOBLOB) {
 		glob.blob(msg);
-	    } else if(msg.type == Message.RMSG_PAGINAE) {
-		glob.paginae(msg);
 	    } else if(msg.type == Message.RMSG_RESID) {
 		int resid = msg.uint16();
 		String resname = msg.string();
@@ -355,15 +353,11 @@ public class Session {
 		synchronized(rescache) {
 		    getres(resid).set(Resource.load(resname, resver, -5));
 		}
-	    } else if(msg.type == Message.RMSG_PARTY) {
-		glob.party.msg(msg);
 	    } else if(msg.type == Message.RMSG_SFX) {
 		Indir<Resource> res = getres(msg.uint16());
 		double vol = ((double)msg.uint16()) / 256.0;
 		double spd = ((double)msg.uint16()) / 256.0;
 		Audio.play(res);
-	    } else if(msg.type == Message.RMSG_CATTR) {
-		glob.cattr(msg);
 	    } else if(msg.type == Message.RMSG_MUSIC) {
 		String resnm = msg.string();
 		int resver = msg.uint16();
@@ -374,8 +368,6 @@ public class Session {
 		    Music.play(Resource.load(resnm, resver), loop);
 	    } else if(msg.type == Message.RMSG_TILES) {
 		glob.map.tilemap(msg);
-	    } else if(msg.type == Message.RMSG_BUFF) {
-		glob.buffmsg(msg);
 	    } else {
 		throw(new MessageException("Unknown rmsg type: " + msg.type, msg));
 	    }

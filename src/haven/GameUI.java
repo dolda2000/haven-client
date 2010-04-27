@@ -31,7 +31,7 @@ import java.util.*;
 public class GameUI extends Widget {
     static final Coord meterc = new Coord(95, 10);
     public final int plid;
-    public final String chrnm;
+    public final Charinfo chr;
     SlenHud slen;
     MapView map;
     Fightview frl;
@@ -50,10 +50,10 @@ public class GameUI extends Widget {
     
     public GameUI(Widget parent, String chrnm, int plid) {
 	super(Coord.z, new Coord(800, 600), parent);
-	this.chrnm = chrnm;
+	this.chr = new Charinfo(ui.sess.glob, chrnm);
 	this.plid = plid;
 	slen = new SlenHud(Coord.z, this);
-	new Bufflist(new Coord(95, 50), this);
+	new Bufflist(new Coord(95, 50), this, this.chr);
 	new Avaview(new Coord(10, 10), this, plid);
 	cal = new Cal(new Coord(333, 10), this);
     }
@@ -130,6 +130,17 @@ public class GameUI extends Widget {
 	    } else {
 		slen.setbelt(slot, ui.sess.getres((Integer)args[1]));
 	    }
+	} else if(msg == "chr") {
+	    String an = ((String)args[0]).intern();
+	    if(an == "pag") {
+		chr.paginaemsg(Utils.splice(args, 1));
+	    } else if(an == "at") {
+		chr.cattrmsg(Utils.splice(args, 1));
+	    } else if(an == "prt") {
+		chr.party.msg(Utils.splice(args, 1));
+	    } else if(an == "buff") {
+		chr.buffmsg(Utils.splice(args, 1));
+	    }
 	} else {
 	    super.uimsg(msg, args);
 	}
@@ -141,5 +152,12 @@ public class GameUI extends Widget {
 	    return;
 	}
 	super.wdgmsg(sender, msg, args);
+    }
+    
+    public static Charinfo getchr(Widget wdg) {
+	GameUI gi = wdg.findparent(GameUI.class);
+	if(gi == null)
+	    return(null);
+	return(gi.chr);
     }
 }

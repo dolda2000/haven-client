@@ -950,10 +950,13 @@ public class MapView extends Widget implements DTarget, Console.Directory {
     }
 	
     public void drawarrows(GOut g) {
+	Charinfo chr = GameUI.getchr(this);
+	if(chr == null)
+	    return;
 	Coord oc = viewoffset(sz, mc);
 	Coord hsz = sz.div(2);
 	double ca = -Coord.z.angle(hsz);
-	for(Party.Member m : glob.party.memb.values()) {
+	for(Party.Member m : chr.party.memb.values()) {
 	    //Gob gob = glob.oc.getgob(id);
 	    Coord mc = m.getc();
 	    if(mc == null)

@@ -36,25 +36,19 @@ public class Bufflist extends Widget {
     static final Coord ametersz = new Coord(30, 2);
     static final int margin = 2;
     static final int num = 5;
+    final Charinfo chr;
     
-    static {
-        Widget.addtype("buffs", new WidgetFactory() {
-            public Widget create(Coord c, Widget parent, Object[] args) {
-                return(new Bufflist(c, parent));
-            }
-        });
-    }
-    
-    public Bufflist(Coord c, Widget parent) {
+    public Bufflist(Coord c, Widget parent, Charinfo chr) {
 	super(c, new Coord((num * frame.sz().x) + ((num - 1) * margin), cframe.sz().y), parent);
+	this.chr = chr;
     }
     
     public void draw(GOut g) {
 	int i = 0;
 	int w = frame.sz().x + margin;
 	long now = System.currentTimeMillis();
-	synchronized(ui.sess.glob.buffs) {
-	    for(Buff b : ui.sess.glob.buffs.values()) {
+	synchronized(chr.buffs) {
+	    for(Buff b : chr.buffs.values()) {
 		if(!b.major)
 		    continue;
 		Coord bc = new Coord(i * w, 0);
@@ -97,8 +91,8 @@ public class Bufflist extends Widget {
 	int i = 0;
 	int w = frame.sz().x + margin;
 	tooltip = null;
-	synchronized(ui.sess.glob.buffs) {
-	    for(Buff b : ui.sess.glob.buffs.values()) {
+	synchronized(chr.buffs) {
+	    for(Buff b : chr.buffs.values()) {
 		if(!b.major)
 		    continue;
 		Coord bc = new Coord(i * w, 0);

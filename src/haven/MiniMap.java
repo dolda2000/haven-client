@@ -206,9 +206,10 @@ public class MiniMap extends Widget {
 	if(missing) {
 	    g.image(nomap, Coord.z);
 	} else {
-	    if(!plx.loading) {
-		synchronized(ui.sess.glob.party.memb) {
-		    for(Party.Member m : ui.sess.glob.party.memb.values()) {
+	    Charinfo chr = GameUI.getchr(this);
+	    if((chr != null) && !plx.loading) {
+		synchronized(chr.party.memb) {
+		    for(Party.Member m : chr.party.memb.values()) {
 			Coord ptc = m.getc();
 			if(ptc == null)
 			    continue;

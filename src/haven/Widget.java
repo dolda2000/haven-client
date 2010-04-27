@@ -49,7 +49,7 @@ public class Widget {
 			       MenuGrid.class, SlenHud.class, HWindow.class, CheckBox.class, Logwindow.class,
 			       MapMod.class, ISBox.class, ComMeter.class, Fightview.class, IMeter.class,
 			       GiveButton.class, Charlist.class, ComWin.class, CharWnd.class, BuddyWnd.class,
-			       ChatHW.class, Speedget.class, Bufflist.class, GameUI.class, MiniMap.class};
+			       ChatHW.class, Speedget.class, GameUI.class, MiniMap.class};
 	
     static {
 	addtype("cnt", new WidgetFactory() {
@@ -468,6 +468,14 @@ public class Widget {
 	    T ret = wdg.findchild(cl);
 	    if(ret != null)
 		return(ret);
+	}
+	return(null);
+    }
+    
+    public <T extends Widget> T findparent(Class<T> cl) {
+	for(Widget wdg = this; wdg != null; wdg = wdg.parent) {
+	    if(cl.isInstance(wdg))
+		return(cl.cast(wdg));
 	}
 	return(null);
     }

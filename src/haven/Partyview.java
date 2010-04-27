@@ -33,7 +33,7 @@ import java.util.Map.Entry;
 
 public class Partyview extends Widget {
     int ign;
-    Party party = ui.sess.glob.party;
+    Party party = GameUI.getchr(this).party;
     Map<Integer, Member> om = null;
     Member ol = null;
     Map<Member, Avaview> avs = new HashMap<Member, Avaview>();

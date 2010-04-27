@@ -32,9 +32,6 @@ import java.awt.Color;
 public class Party {
     Map<Integer, Member> memb = new TreeMap<Integer, Member>();
     Member leader = null;
-    public static final int PD_LIST = 0;
-    public static final int PD_LEADER = 1;
-    public static final int PD_MEMBER = 2;
     private Glob glob;
 	
     public Party(Glob glob) {
@@ -54,44 +51,39 @@ public class Party {
 	}
     }
 	
-    public void msg(Message msg) {
-	while(!msg.eom()) {
-	    int type = msg.uint8();
-	    if(type == PD_LIST) {
-		ArrayList<Integer> ids = new ArrayList<Integer>();
-		while(true) {
-		    int id = msg.int32();
-		    if(id < 0)
-			break;
-		    ids.add(id);
+    public void msg(Object... args) {
+	String mt = ((String)args[0]).intern();
+	if(mt == "l") {
+	    Map<Integer, Member> nmemb = new TreeMap<Integer, Member>();
+	    for(int i = 1; i < args.length; i++) {
+		int id = (Integer)args[i];
+		Member m = memb.get(id);
+		if(m == null) {
+		    m = new Member();
+		    m.gobid = id;
 		}
-		Map<Integer, Member> nmemb = new TreeMap<Integer, Member>();
-		for(int id : ids) {
-		    Member m = memb.get(id);
-		    if(m == null) {
-			m = new Member();
-			m.gobid = id;
-		    }
-		    nmemb.put(id, m);
-		}
-		int lid = (leader == null)?-1:leader.gobid;
-		memb = nmemb;
-		leader = memb.get(lid);
-	    } else if(type == PD_LEADER) {
-		Member m = memb.get(msg.int32());
-		if(m != null)
-		    leader = m;
-	    } else if(type == PD_MEMBER) {
-		Member m = memb.get(msg.int32());
-		Coord c = null;
-		boolean vis = msg.uint8() == 1;
-		if(vis)
-		    c = msg.coord();
-		Color col = msg.color();
-		if(m != null) {
-		    m.c = c;
-		    m.col = col;
-		}
+		nmemb.put(id, m);
+	    }
+	    int lid = (leader == null)?-1:leader.gobid;
+	    memb = nmemb;
+	    leader = memb.get(lid);
+	} else if(mt == "d") {
+	    Member m = memb.get((Integer)args[1]);
+	    if(m != null)
+		leader = m;
+	} else if(mt == "m") {
+	    int i = 1;
+	    Member m = memb.get((Integer)args[i++]);
+	    Coord c = null;
+	    int fl = (Integer)args[i++];
+	    if((fl & 1) != 0)
+		c = (Coord)args[i++];
+	    Color col = m.col;
+	    if((fl & 2) != 0)
+		col = (Color)args[i++];
+	    if(m != null) {
+		m.c = c;
+		m.col = col;
 	    }
 	}
     }

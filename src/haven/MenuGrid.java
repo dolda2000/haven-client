@@ -46,6 +46,7 @@ public class MenuGrid extends Widget {
     private Text curtt = null;
     private long hoverstart = 0;
     private boolean withpg;
+    private Charinfo chr = GameUI.getchr(this);
 	
     static {
 	Widget.addtype("scm", new WidgetFactory() {
@@ -70,8 +71,8 @@ public class MenuGrid extends Widget {
 	{
 	    Collection<Resource> ta = new HashSet<Resource>();
 	    Collection<Resource> open;
-	    synchronized(ui.sess.glob.paginae) {
-		open = new HashSet<Resource>(ui.sess.glob.paginae);
+	    synchronized(chr.paginae) {
+		open = new HashSet<Resource>(chr.paginae);
 	    }
 	    while(!open.isEmpty()) {
 		for(Resource r : open.toArray(cp)) {
